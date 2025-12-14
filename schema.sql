@@ -48,3 +48,19 @@ CREATE TABLE `pos_definitions` (
   `updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`pos`)
 );
+
+
+
+select 
+  ste.id, ste.spanish, ste.english,
+  sa.audio_file,
+  sp.pos,
+  pd.description
+from 
+spanish_to_english as ste
+left join 
+  spanish_audio sa on sa.id = ste.id
+left join 
+  spanish_pos sp on sp.id = ste.id
+left join 
+  pos_definitions pd on pd.pos = sp.pos;
