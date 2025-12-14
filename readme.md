@@ -118,5 +118,13 @@ CREATE TABLE `pos_definitions` (
 
 -- Dump completed on 2025-12-13 10:24:21
 
-
 ```
+
+---
+<img width="496" height="338" alt="Screenshot 2025-12-14 at 3 51 40 PM" src="https://github.com/user-attachments/assets/64c2225d-30ab-4981-8c25-74e5e7e0196a" />
+
+---
+<img width="549" height="451" alt="Screenshot 2025-12-14 at 3 51 53 PM" src="https://github.com/user-attachments/assets/42bf1826-9c13-4c9a-8a04-280cd4c84e31" />
+
+---
+<img width="889" height="421" alt="Screenshot 2025-12-14 at 3 52 08 PM" src="https://github.com/user-attachments/assets/be03fc17-8ead-409b-8882-5913ac44cbfc" />
