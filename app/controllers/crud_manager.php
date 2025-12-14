@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <title>jQuery Table Pagination</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Added for Multi-Select Choices.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <!-- Added for Multi-Select Choices.js -->
+
   <!-- <link rel="stylesheet" href="style.css" /> -->
 
   <style>
@@ -73,22 +79,57 @@ button {
 
   <!-- <input class="mb-3" type="text" id="search" placeholder="Search..." /> -->
 
-  <div class="mb-3">
+  <!-- Remove Search for the time being focus on adding Part of speech or tags. -->
+  <!-- <div class="mb-3">
     <input type="search" class="mb-3 form-control" id="search" aria-describedby="emailHelp" placeholder="Search...">
+  </div> -->
+
+  <div class="mb-3">
+      <select name="flagFilter" id="flagFilter" class="form-control">
+        <option value="-1">---Filter Status---</option>
+        <option value="0">🟢 Good</option>
+        <option value="1">🟡 Needs Checking</option>
+        <option value="2">🔴 Bad</option>
+        <option value="3">⚪ Unchecked</option>
+      </select>
   </div>
 
 
-  <button id="addNew" class="btn btn-primary mb-3">
+  <!-- Commenting since this needs to be handled using backend data store -->
+  <!-- <button id="addNew" class="btn btn-primary mb-3">
     + Add New
-  </button>
+  </button> -->
 
   <!-- Modal -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <h3 id="modalTitle"></h3>
       <input type="hidden" id="recordId" />
-      <input type="text" id="nameInput" placeholder="Name" />
-      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="text" id="nameInput" placeholder="English" />
+      <input type="email" id="emailInput" placeholder="Spanish" />
+
+      <br>
+
+      <!-- This is the element we will enhance -->
+      <select name="flag" id="flagInput">
+        <option value="0">🟢 Good</option>
+        <option value="1">🟡 Needs Checking</option>
+        <option value="2">🔴 Bad</option>
+        <option value="3">⚪ Unchecked</option>
+      </select>
+
+      <br>
+
+      <!-- pos input -->
+      <!-- <select id="posInput" multiple>
+        <option value="0">Noun</option>
+        <option value="1">Pronoun</option>
+        <option value="2">Adjective</option>
+        <option value="3">Adverb</option>
+      </select> -->
+      <!-- pos input -->
+
+      <br>
 
       <button id="saveRecord">Save</button>
       <button id="closeModal">Cancel</button>
@@ -99,9 +140,12 @@ button {
   <table id="dataTable">
     <thead>
       <tr>
-        <th data-key="id">ID</th>
-        <th data-key="name">audio</th>
-        <th data-key="email">tag name</th>
+        <th data-key="id">Sr. No</th>
+        <th data-key="name">English</th>
+        <th data-key="email">Spanish</th>
+        <th data-key="flag">Flag</th>
+        <!-- <th data-key="pos">Description (POS)</th> -->
+        <th data-key="audio">Audio</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -116,22 +160,36 @@ button {
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <!-- <script src="script.js"></script> -->
    <script>
-    let allData = [];
+
+let allData = [];
 let filteredData = [];
 let currentPage = 1;
 let rowsPerPage = 10;
 let sortKey = "";
 let sortOrder = "asc";
 
+let flagValue = {
+  0: "🟢 Good" , 1 : "🟡 Needs Checking" , 2 : "🔴 Bad" , 3 : "⚪ Unchecked"
+}
+
+// let posValue ={
+//   0: "Noun" , 1 : "Pronoun" , 2 : "Adjective" , 3 : "Adverb"
+// }
+
+let audio = [];
+
 /* ------------------ FETCH DATA ------------------ */
 function fetchData() {
   // Simulated backend response
   allData = Array.from({ length: 12000 }, (_, i) => ({
     id: i + 1,
-    // name: "User " + (i + 1),
-    // email: "user" + (i + 1) + "@example.com"
-    name: "" + (i + 1) + "_audio",
-    email: "" + (i + 1) + "_tag_name"
+    name: "" + (i + 1) + "_english",
+    email: "" + (i + 1) + "_spanish",
+    flag: (i%4),
+    flagdisplay: flagValue[i%4],
+    // pos: [(i % 4).toString()],
+    // posString: posValue[i%4],
+    audio: "<a href='#'>🔈audio_" + (i + 1) + ".mp3</a>"
   }));
 
   filteredData = [...allData];
@@ -139,25 +197,8 @@ function fetchData() {
   renderPagination();
 }
 
-/* ------------------ RENDER TABLE ------------------ */
-/*function renderTable() {
-  const start = (currentPage - 1) * rowsPerPage;
-  const end = start + rowsPerPage;
-  const pageData = filteredData.slice(start, end);
 
-  const tbody = $("#dataTable tbody");
-  tbody.empty();
 
-  pageData.forEach(row => {
-    tbody.append(`
-      <tr>
-        <td>${row.id}</td>
-        <td>${row.name}</td>
-        <td>${row.email}</td>
-      </tr>
-    `);
-  });
-}*/
 
 function renderTable() {
   const start = (currentPage - 1) * rowsPerPage;
@@ -172,6 +213,9 @@ function renderTable() {
         <td>${row.id}</td>
         <td>${row.name}</td>
         <td>${row.email}</td>
+        <td>${flagValue[row.flag]}</td>
+        <!-- td>${row.pos}</td -->
+        <td>${row.audio}</td>
         <td>
           <button class="btn btn-sm btn-warning edit" data-id="${row.id}">
             Edit
@@ -201,11 +245,24 @@ $("#addNew").click(function () {
 $(document).on("click", ".edit", function () {
   const id = Number($(this).data("id"));
   const record = allData.find(r => r.id === id);
+  console.log(record);
 
   $("#modalTitle").text("Edit Record");
   $("#recordId").val(record.id);
   $("#nameInput").val(record.name);
   $("#emailInput").val(record.email);
+  $("#flagInput").val(record.flag);
+
+  // var posSelect = new Choices('#posInput', {
+  //   removeItemButton: true,
+  //   searchEnabled: true,
+  //   shouldSort: false
+  // });
+
+  // var selectedPos = posSelect.getValue(true).map(Number);
+  // console.log(selectedPos);
+
+  // $("#posInput").val(record.pos);
   $("#modal").show();
 });
 
@@ -216,6 +273,8 @@ $("#saveRecord").click(function () {
   const id = $("#recordId").val();
   const name = $("#nameInput").val();
   const email = $("#emailInput").val();
+  const flag = $("#flagInput").val();
+  // const pos = $("#posInput").val();
 
   if (!name || !email) return alert("All fields required");
 
@@ -224,6 +283,10 @@ $("#saveRecord").click(function () {
     const record = allData.find(r => r.id == id);
     record.name = name;
     record.email = email;
+    record.flag = flag;
+    // record.pos = pos;//['1', '2', '3']
+
+    // console.log(record);
   } else {
     // CREATE
     const newId = allData.length
@@ -263,21 +326,6 @@ $("#closeModal").click(() => $("#modal").hide());
 
 
 /* ------------------ PAGINATION ------------------ */
-/*
-function renderPagination() {
-  const pageCount = Math.ceil(filteredData.length / rowsPerPage);
-  const pagination = $("#pagination");
-  pagination.empty();
-
-  for (let i = 1; i <= pageCount; i++) {
-    pagination.append(`
-      <button class="${i === currentPage ? "active" : ""}" data-page="${i}">
-        ${i}
-      </button>
-    `);
-  }
-}
-*/
 function renderPagination() {
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const pagination = $("#pagination");
@@ -363,6 +411,27 @@ $("#search").on("keyup", function () {
   renderTable();
   renderPagination();
 });
+
+// filtering using dropdown
+
+
+$("#flagFilter").on("change", function () {
+  const selectedFlag = Number($(this).val());
+
+  if (selectedFlag === -1) {
+    // No filter selected → show all
+    filteredData = [...allData];
+  } else {
+    filteredData = allData.filter(item =>
+      Number(item.flag) === selectedFlag
+    );
+  }
+
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+});
+
 
 /* ------------------ INIT ------------------ */
 $(document).ready(fetchData);
