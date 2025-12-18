@@ -128,3 +128,20 @@ CREATE TABLE `pos_definitions` (
 
 ---
 <img width="889" height="421" alt="Screenshot 2025-12-14 at 3 52 08 PM" src="https://github.com/user-attachments/assets/be03fc17-8ead-409b-8882-5913ac44cbfc" />
+
+
+
+
+
+
+```sql
+    select
+    ste.id, ste.spanish, ste.english,
+    sa.audio_file,
+    sp.pos,
+    pd.description
+    from spanish_to_english as ste
+    left join spanish_audio sa on sa.id = ste.id
+    left join spanish_pos sp on sp.id = ste.id
+    left join pos_definitions pd on pd.pos = sp.pos;
+``
